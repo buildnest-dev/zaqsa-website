@@ -57,39 +57,51 @@ export const SITE_DEFAULTS: SiteData = {
 };
 
 const FIRESTORE =
-  "https://firestore.googleapis.com/v1/projects/zaqsa2026-44d9f/databases/(default)/documents/site";
+  "https://firestore.googleapis.com/v1/projects/zaqsa2026-44d9f/databases/(default)/documents/site?pageSize=20";
 const TTL_MS = 60_000;
+const RETRY_MS = 5_000;
+const TIMEOUT_MS = 6_000;
 
-const status: Record<string, string> = {};
+type Fetched = { docs: Record<string, unknown>; status: Record<string, string>; ok: boolean };
 
-async function readDoc<T>(key: string): Promise<T | null> {
+/** One request for every area (cheaper than one per area, and one connection to set up). */
+async function fetchAll(): Promise<Fetched> {
+  const started = Date.now();
   try {
-    const response = await fetch(`${FIRESTORE}/${key}`, { signal: AbortSignal.timeout(4000) });
+    const response = await fetch(FIRESTORE, { signal: AbortSignal.timeout(TIMEOUT_MS) });
     if (!response.ok) {
-      status[key] = `http ${response.status}`;
-      return null;
+      return { docs: {}, ok: false, status: { error: `http ${response.status}` } };
     }
-    const body = (await response.json()) as { fields?: { json?: { stringValue?: string } } };
-    const text = body.fields?.json?.stringValue;
-    status[key] = text ? "firestore" : "empty";
-    return text ? (JSON.parse(text) as T) : null;
+    const body = (await response.json()) as {
+      documents?: { name: string; fields?: { json?: { stringValue?: string } } }[];
+    };
+    const docs: Record<string, unknown> = {};
+    const status: Record<string, string> = { ms: String(Date.now() - started) };
+    for (const entry of body.documents ?? []) {
+      const key = entry.name.split("/").pop() ?? "";
+      const text = entry.fields?.json?.stringValue;
+      if (!text) continue;
+      try {
+        docs[key] = JSON.parse(text);
+        status[key] = "firestore";
+      } catch {
+        status[key] = "bad json";
+      }
+    }
+    return { docs, status, ok: true };
   } catch (problem) {
-    status[key] = `error ${problem instanceof Error ? problem.message : String(problem)}`;
-    return null;
+    const message = problem instanceof Error ? problem.message : String(problem);
+    return { docs: {}, ok: false, status: { error: message, ms: String(Date.now() - started) } };
   }
 }
 
-let cache: { at: number; data: SiteData } | undefined;
-let inflight: Promise<SiteData> | undefined;
-
-async function load(): Promise<SiteData> {
-  const [company, team, services, core, home] = await Promise.all([
-    readDoc<SiteData["company"]>("company"),
-    readDoc<{ people: (Omit<SitePerson, "slot"> & { slot?: SitePerson["slot"] })[] }>("team"),
-    readDoc<{ items: SiteService[] }>("services"),
-    readDoc<{ items: SiteData["core"] }>("core"),
-    readDoc<SiteHome>("home"),
-  ]);
+function build({ docs, status }: Fetched): SiteData {
+  const company = docs["company"] as SiteData["company"] | undefined;
+  const team = docs["team"] as
+    { people?: (Omit<SitePerson, "slot"> & { slot?: SitePerson["slot"] })[] } | undefined;
+  const services = docs["services"] as { items?: SiteService[] } | undefined;
+  const core = docs["core"] as { items?: SiteData["core"] } | undefined;
+  const home = docs["home"] as SiteHome | undefined;
   return {
     company: company ? { ...COMPANY, ...company } : COMPANY,
     team: team?.people?.length
@@ -101,20 +113,35 @@ async function load(): Promise<SiteData> {
     services: services?.items?.length ? services.items : SERVICES,
     core: core?.items?.length ? core.items : SITE_DEFAULTS.core,
     home: home ? { ...HOME_DEFAULT, ...home } : HOME_DEFAULT,
-    status: { ...status },
+    status,
   };
 }
 
-/** Fresh content, cached for a minute per server/browser so pages stay fast. */
+let cache: { until: number; data: SiteData; ok: boolean } | undefined;
+let inflight: Promise<SiteData> | undefined;
+
+/**
+ * Fresh content, cached for a minute per server/browser. A failed load never replaces content
+ * that loaded earlier, and is retried after a few seconds, so one slow request cannot leave a
+ * server showing the built-in version.
+ */
 export async function getSiteContent(): Promise<SiteData> {
-  if (cache && Date.now() - cache.at < TTL_MS) return cache.data;
-  inflight ??= load()
-    .then((data) => {
-      cache = { at: Date.now(), data };
-      return data;
+  if (cache && Date.now() < cache.until) return cache.data;
+  inflight ??= fetchAll()
+    .then((result) => {
+      if (result.ok || !cache?.ok) {
+        cache = {
+          until: Date.now() + (result.ok ? TTL_MS : RETRY_MS),
+          data: build(result),
+          ok: result.ok,
+        };
+      } else {
+        cache = { ...cache, until: Date.now() + RETRY_MS };
+      }
+      return cache.data;
     })
     .finally(() => {
       inflight = undefined;
     });
-  return cache?.data ?? inflight;
+  return inflight;
 }

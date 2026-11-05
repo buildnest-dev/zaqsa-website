@@ -1,7 +1,10 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { SERVICES } from "@/lib/content";
 
-const doc = (value: unknown) => ({ fields: { json: { stringValue: JSON.stringify(value) } } });
+const doc = (key: string, value: unknown) => ({
+  name: `projects/p/databases/(default)/documents/site/${key}`,
+  fields: { json: { stringValue: JSON.stringify(value) } },
+});
 
 async function freshModule() {
   vi.resetModules();
@@ -28,12 +31,12 @@ describe("getSiteContent", () => {
     };
     vi.stubGlobal(
       "fetch",
-      vi.fn(async (url: string) => {
-        const key = url.split("/").pop()!;
-        return published[key]
-          ? new Response(JSON.stringify(doc(published[key])))
-          : new Response("{}", { status: 404 });
-      }),
+      vi.fn(
+        async () =>
+          new Response(
+            JSON.stringify({ documents: Object.entries(published).map(([k, v]) => doc(k, v)) }),
+          ),
+      ),
     );
     const { getSiteContent } = await freshModule();
     const site = await getSiteContent();
@@ -43,5 +46,19 @@ describe("getSiteContent", () => {
     expect(site.home.titleLine1).toBe("Hello");
     expect(site.home.titleLine2).toBe("into scalable software.");
     expect(site.company.phone).toBe("+91 9570752983");
+  });
+
+  it("keeps earlier content when a later refresh fails", async () => {
+    vi.useFakeTimers();
+    const body = JSON.stringify({ documents: [doc("home", { titleLine1: "First" })] });
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce(new Response(body))
+      .mockRejectedValue(new Error("slow"));
+    vi.stubGlobal("fetch", fetchMock);
+    const { getSiteContent } = await freshModule();
+    expect((await getSiteContent()).home.titleLine1).toBe("First");
+    vi.advanceTimersByTime(61_000);
+    expect((await getSiteContent()).home.titleLine1).toBe("First");
   });
 });
