@@ -31,6 +31,8 @@ export type SiteData = {
   services: SiteService[];
   core: (typeof CORE_SERVICES)[number][];
   home: SiteHome;
+  /** Where each area came from ("firestore", "none" or an error), to make a bad setup easy to spot. */
+  status?: Record<string, string>;
 };
 
 export const HOME_DEFAULT: SiteHome = {
@@ -58,14 +60,21 @@ const FIRESTORE =
   "https://firestore.googleapis.com/v1/projects/zaqsa2026-44d9f/databases/(default)/documents/site";
 const TTL_MS = 60_000;
 
+const status: Record<string, string> = {};
+
 async function readDoc<T>(key: string): Promise<T | null> {
   try {
-    const response = await fetch(`${FIRESTORE}/${key}`, { signal: AbortSignal.timeout(2500) });
-    if (!response.ok) return null;
+    const response = await fetch(`${FIRESTORE}/${key}`, { signal: AbortSignal.timeout(4000) });
+    if (!response.ok) {
+      status[key] = `http ${response.status}`;
+      return null;
+    }
     const body = (await response.json()) as { fields?: { json?: { stringValue?: string } } };
     const text = body.fields?.json?.stringValue;
+    status[key] = text ? "firestore" : "empty";
     return text ? (JSON.parse(text) as T) : null;
-  } catch {
+  } catch (problem) {
+    status[key] = `error ${problem instanceof Error ? problem.message : String(problem)}`;
     return null;
   }
 }
@@ -92,6 +101,7 @@ async function load(): Promise<SiteData> {
     services: services?.items?.length ? services.items : SERVICES,
     core: core?.items?.length ? core.items : SITE_DEFAULTS.core,
     home: home ? { ...HOME_DEFAULT, ...home } : HOME_DEFAULT,
+    status: { ...status },
   };
 }
 
