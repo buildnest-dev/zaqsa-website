@@ -150,3 +150,11 @@ export function getPhoto(slot: PhotoSlot): {
   }
   return { src: undefined, alt, art: ART[slot], initials: undefined };
 }
+
+/** "Drona Singh Rajpoot" -> "DR"; used when a person has no photo. */
+export function initialsOf(name: string): string {
+  const parts = name.trim().split(/\s+/).filter(Boolean);
+  return (
+    (parts[0]?.[0] ?? "Z") + (parts.length > 1 ? (parts[1]?.[0] ?? "") : (parts[0]?.[1] ?? ""))
+  ).toUpperCase();
+}

@@ -10,9 +10,10 @@ import {
   Palette,
   Share2,
   Store,
+  Sparkles,
   Vote,
 } from "@/components/site/icons";
-import { CORE_SERVICES } from "@/lib/content";
+import { useSite } from "@/components/site/SiteContent";
 import { getGsap, prefersReducedMotion, smooth } from "@/lib/motion";
 import {
   AutomationVisual,
@@ -56,6 +57,7 @@ const VISUALS: Record<string, ReactNode> = {
  * Without motion (or before hydration) the cards simply stack as a normal list.
  */
 export function CoreShowcase() {
+  const { core: CORE_SERVICES, services } = useSite();
   const root = useRef<HTMLElement>(null);
   const scene = useRef<{ trigger: ScrollTrigger; total: number } | null>(null);
 
@@ -215,7 +217,7 @@ export function CoreShowcase() {
               ))}
             </span>
             {CORE_SERVICES.map((service) => {
-              const Icon = ICONS[service.id];
+              const Icon = ICONS[service.id as keyof typeof ICONS] ?? Sparkles;
               return (
                 <article key={service.id} className="core-card">
                   <div className="core-copy">
@@ -250,10 +252,13 @@ export function CoreShowcase() {
                     <span className="core-scene">
                       <Photo
                         slot={`service-photo-${service.id}`}
+                        url={services.find((entry) => entry.id === service.id)?.photo}
                         className="core-photo"
                         settle={false}
                       />
-                      <span className="core-float">{VISUALS[service.id]}</span>
+                      <span className="core-float">
+                        {VISUALS[service.id as keyof typeof VISUALS]}
+                      </span>
                     </span>
                   </Link>
                 </article>

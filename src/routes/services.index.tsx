@@ -13,7 +13,8 @@ import {
 } from "@/components/site/icons";
 import { GlassButton, PageHero, Reveal } from "@/components/site/primitives";
 import { Photo } from "@/components/site/Photo";
-import { CATEGORY_LABEL, SERVICES, type Service } from "@/lib/content";
+import { CATEGORY_LABEL, type Service } from "@/lib/content";
+import { useSite } from "@/components/site/SiteContent";
 import { seo } from "@/lib/seo";
 import { ServicesVisual } from "@/components/site/hero-visuals";
 
@@ -40,6 +41,7 @@ const FEATURE_ICON: Record<string, typeof HeartPulse> = {
 const CAT_LABEL = CATEGORY_LABEL;
 
 function Page() {
+  const { services: SERVICES } = useSite();
   const [active, setActive] = useState<Service["category"] | "All">("All");
   const visibleCats = active === "All" ? CATS : CATS.filter((cat) => cat === active);
   return (
@@ -90,7 +92,7 @@ function Page() {
                           className="svc-feature group"
                         >
                           <span className="svc-feature-media">
-                            <Photo slot={`service-photo-${s.id}`} ratio="16 / 10" />
+                            <Photo slot={`service-photo-${s.id}`} url={s.photo} ratio="16 / 10" />
                             <span className="svc-feature-badge">Core service</span>
                             <span className="svc-feature-icon">
                               <Icon size={34} />

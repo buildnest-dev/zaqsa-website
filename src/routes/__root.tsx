@@ -12,6 +12,8 @@ import { useEffect, useRef, type ReactNode } from "react";
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { Nav } from "@/components/site/Nav";
+import { SiteContentProvider } from "@/components/site/SiteContent";
+import { getSiteContent } from "@/lib/site-content";
 import { SmoothScroll } from "@/components/site/SmoothScroll";
 import { Footer } from "@/components/site/Footer";
 import { AskZaqsa } from "@/components/site/AskZaqsa";
@@ -57,6 +59,7 @@ function ScrollProgress() {
 }
 
 export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
+  loader: () => getSiteContent(),
   head: () => ({
     meta: [
       { charSet: "utf-8" },
@@ -130,27 +133,30 @@ function RootShell({ children }: { children: ReactNode }) {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
+  const site = Route.useLoaderData();
   const { pathname } = useLocation();
 
   return (
     <QueryClientProvider client={queryClient}>
-      <div className={pathname === "/" ? "site-shell home-theme" : "site-shell interior-theme"}>
-        <a
-          href="#content"
-          className="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-[60] focus:rounded-full focus:bg-primary focus:px-4 focus:py-2 focus:text-primary-foreground"
-        >
-          Skip to content
-        </a>
-        <ScrollProgress />
-        <SmoothScroll />
-        <Nav />
-        <div id="content" key={pathname} className="route-transition">
-          <Outlet />
+      <SiteContentProvider value={site}>
+        <div className={pathname === "/" ? "site-shell home-theme" : "site-shell interior-theme"}>
+          <a
+            href="#content"
+            className="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-[60] focus:rounded-full focus:bg-primary focus:px-4 focus:py-2 focus:text-primary-foreground"
+          >
+            Skip to content
+          </a>
+          <ScrollProgress />
+          <SmoothScroll />
+          <Nav />
+          <div id="content" key={pathname} className="route-transition">
+            <Outlet />
+          </div>
+          <Footer />
+          <AskZaqsa />
+          <ConnectionBanner />
         </div>
-        <Footer />
-        <AskZaqsa />
-        <ConnectionBanner />
-      </div>
+      </SiteContentProvider>
     </QueryClientProvider>
   );
 }

@@ -21,16 +21,9 @@ import {
   UserPlus,
   Wheat,
 } from "@/components/site/icons";
-import {
-  COMPANY,
-  CORE_SERVICES,
-  INDUSTRIES,
-  JOURNEY_STEPS,
-  LAB,
-  NEED_EVENT,
-  TEAM,
-  TECHNOLOGY,
-} from "@/lib/content";
+import { INDUSTRIES, JOURNEY_STEPS, LAB, NEED_EVENT, TECHNOLOGY } from "@/lib/content";
+import { useSite } from "@/components/site/SiteContent";
+import { initialsOf } from "@/lib/photos";
 import { smooth } from "@/lib/motion";
 import { GlassButton } from "@/components/site/primitives";
 import { FounderDeck } from "@/components/site/FounderDeck";
@@ -319,6 +312,7 @@ export function LabHero() {
 
 /* ---------------------------------------------------------------------- About */
 export function AboutHero() {
+  const { company: COMPANY } = useSite();
   return (
     <header className="hero hero-portrait">
       <TechBackdrop />
@@ -352,6 +346,7 @@ export function AboutHero() {
 
 /* -------------------------------------------------------------------- Contact */
 export function ContactHero() {
+  const { company: COMPANY, core: CORE_SERVICES, team: TEAM } = useSite();
   const pick = (label: string) => {
     window.dispatchEvent(new CustomEvent(NEED_EVENT, { detail: label }));
     const form = document.getElementById("contact-form");

@@ -1,6 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { GlassButton, Reveal } from "@/components/site/primitives";
-import { COMPANY, TEAM } from "@/lib/content";
+import { COMPANY } from "@/lib/content";
+import { useSite } from "@/components/site/SiteContent";
+import { initialsOf } from "@/lib/photos";
 import { Photo } from "@/components/site/Photo";
 import { AboutHero } from "@/components/site/heroes";
 import { seo } from "@/lib/seo";
@@ -35,13 +37,19 @@ const BLOCKS = [
 ];
 
 function TeamGrid({ group }: { group: "founder" | "engineer" }) {
-  const people = TEAM.filter((person) => person.group === group);
+  const { team } = useSite();
+  const people = team.filter((person) => person.group === group);
   return (
     <ul className="team-grid mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
       {people.map((person, index) => (
         <Reveal as="li" key={person.name} delay={index * 80} className="team-card">
           <div className="team-photo">
-            <Photo slot={person.slot} ratio="4 / 5" />
+            <Photo
+              slot={person.slot}
+              url={person.photo}
+              initials={initialsOf(person.name)}
+              ratio="4 / 5"
+            />
           </div>
           <div className="team-meta">
             <strong>{person.name}</strong>

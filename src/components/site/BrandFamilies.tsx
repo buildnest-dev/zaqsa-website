@@ -11,6 +11,7 @@ import {
   Vote,
 } from "@/components/site/icons";
 import { Reveal } from "@/components/site/primitives";
+import { useSite } from "@/components/site/SiteContent";
 
 const FAMILIES = [
   {
@@ -55,6 +56,7 @@ const FAMILIES = [
 
 /** The eight areas ZAQSA works in, each linking to its main service page. */
 export function BrandFamilies() {
+  const { home } = useSite();
   return (
     <section className="py-24 sm:py-32" aria-labelledby="family-h">
       <div className="container-z">
@@ -64,11 +66,12 @@ export function BrandFamilies() {
             id="family-h"
             className="mt-4 text-[clamp(2.1rem,4.8vw,4rem)] leading-[1.02] font-medium tracking-[-.02em]"
           >
-            One company, <em>eight</em> ways to grow.
+            {home.familyTitle
+              .split(/(eight)/i)
+              .map((part, index) => (/^eight$/i.test(part) ? <em key={index}>{part}</em> : part))}
           </h2>
           <p className="mt-5 max-w-2xl text-base leading-relaxed text-muted-foreground sm:text-lg">
-            Pick the area closest to your work. Every ZAQSA team shares the same engineers, the same
-            standards and the same accountable point of contact.
+            {home.familyIntro}
           </p>
         </Reveal>
         <ul className="family-grid mt-14">

@@ -16,6 +16,8 @@ export function Photo({
   eager = false,
   settle = true,
   style,
+  url,
+  initials: initialsOverride,
 }: {
   slot: PhotoSlot;
   className?: string;
@@ -24,8 +26,14 @@ export function Photo({
   eager?: boolean;
   settle?: boolean;
   style?: CSSProperties;
+  /** Admin-uploaded picture; wins over the photo bundled with the website. */
+  url?: string | undefined;
+  initials?: string | undefined;
 }) {
-  const { src, alt, art, initials } = getPhoto(slot);
+  const found = getPhoto(slot);
+  const src = url || found.src;
+  const { alt, art } = found;
+  const initials = initialsOverride ?? found.initials;
   const ref = useRef<HTMLDivElement>(null);
   useOnceInView(ref, (element) => element.classList.add("is-in"));
 

@@ -1,5 +1,6 @@
 import { useEffect, useRef, type CSSProperties } from "react";
-import { TEAM } from "@/lib/content";
+import { useSite } from "@/components/site/SiteContent";
+import { initialsOf } from "@/lib/photos";
 import { Photo } from "@/components/site/Photo";
 
 /**
@@ -9,7 +10,8 @@ import { Photo } from "@/components/site/Photo";
  */
 export function FounderDeck() {
   const deck = useRef<HTMLDivElement>(null);
-  const founders = TEAM.filter((person) => person.group === "founder");
+  const { team } = useSite();
+  const founders = team.filter((person) => person.group === "founder");
 
   useEffect(() => {
     const root = deck.current;
@@ -33,7 +35,14 @@ export function FounderDeck() {
       {founders.map((person, index) => (
         <figure key={person.slot} className="fcard" style={{ "--i": index } as CSSProperties}>
           <div className="fcard-inner">
-            <Photo slot={person.slot} ratio="4 / 5" settle={false} className="fcard-photo" />
+            <Photo
+              slot={person.slot}
+              url={person.photo}
+              initials={initialsOf(person.name)}
+              ratio="4 / 5"
+              settle={false}
+              className="fcard-photo"
+            />
             <figcaption>
               <strong>{person.name}</strong>
               <span>{person.role}</span>

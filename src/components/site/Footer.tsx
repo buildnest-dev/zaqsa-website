@@ -1,7 +1,8 @@
 import { Link } from "@tanstack/react-router";
 import { ArrowUpRight } from "@/components/site/icons";
 import { Logo } from "./Nav";
-import { COMPANY, NAV } from "@/lib/content";
+import { NAV } from "@/lib/content";
+import { useSite } from "@/components/site/SiteContent";
 
 const EXPERTISE = [
   { to: "/services", label: "Services" },
@@ -14,6 +15,7 @@ const EXPERTISE = [
 const COMPANY_LINKS = NAV.filter(({ to }) => ["/lab", "/about", "/contact"].includes(to));
 
 export function Footer() {
+  const { company: COMPANY } = useSite();
   return (
     <footer className="site-footer">
       <div className="container-z relative">

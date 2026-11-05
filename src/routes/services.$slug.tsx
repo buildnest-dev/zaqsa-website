@@ -1,14 +1,16 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { GlassButton, PageHero, Reveal, SectionHead } from "@/components/site/primitives";
-import { CATEGORY_LABEL, ENGAGEMENT_STEPS, SERVICES } from "@/lib/content";
+import { CATEGORY_LABEL, ENGAGEMENT_STEPS } from "@/lib/content";
+import { useSite } from "@/components/site/SiteContent";
+import { getSiteContent } from "@/lib/site-content";
 import { NotFoundPage } from "@/components/site/ErrorPages";
 import { Photo } from "@/components/site/Photo";
 import { getPhoto } from "@/lib/photos";
 import { seo } from "@/lib/seo";
 
 export const Route = createFileRoute("/services/$slug")({
-  loader: ({ params }) => {
-    const service = SERVICES.find((s) => s.id === params.slug);
+  loader: async ({ params }) => {
+    const service = (await getSiteContent()).services.find((s) => s.id === params.slug);
     if (!service) throw notFound();
     return { service };
   },
@@ -34,8 +36,9 @@ function ServiceNotFound() {
 function Page() {
   const { service: s } = Route.useLoaderData();
   const photoSlot = `service-photo-${s.id}` as const;
-  const hasPhoto = Boolean(getPhoto(photoSlot).src);
-  const others = SERVICES.filter((x) => x.id !== s.id && x.category === s.category).slice(0, 3);
+  const { services } = useSite();
+  const hasPhoto = Boolean(s.photo) || Boolean(getPhoto(photoSlot).src);
+  const others = services.filter((x) => x.id !== s.id && x.category === s.category).slice(0, 3);
   return (
     <main>
       <PageHero
@@ -49,7 +52,7 @@ function Page() {
           <div className="container-z">
             <Reveal>
               <div className="service-photo">
-                <Photo slot={photoSlot} />
+                <Photo slot={photoSlot} url={s.photo} />
               </div>
             </Reveal>
           </div>

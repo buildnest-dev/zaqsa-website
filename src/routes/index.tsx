@@ -39,16 +39,15 @@ import { ProcessSticky } from "@/components/site/ProcessSticky";
 import { useOnceInView } from "@/lib/motion";
 import {
   BUSINESS,
-  COMPANY,
   CONSULTING_PILLARS,
   INDUSTRIES,
-  SERVICES,
   STACK_ROWS,
   TECHNOLOGY,
   TECH_RIBBON,
 } from "@/lib/content";
 import { IndustryAccordion } from "@/components/site/IndustryAccordion";
 import { seo } from "@/lib/seo";
+import { useSite } from "@/components/site/SiteContent";
 
 export const Route = createFileRoute("/")({
   head: () =>
@@ -61,16 +60,17 @@ export const Route = createFileRoute("/")({
 
 const PILLAR_ICONS = [Compass, LineChart, Cpu, Workflow];
 const RIBBON_ITEMS = TECH_RIBBON;
-const STATS = [
-  { value: Math.floor(SERVICES.length / 5) * 5, label: "Service lines", suffix: "+" },
-  { value: TECHNOLOGY.length, label: "Technology domains", suffix: "+" },
-  {
-    value: [...TECHNOLOGY, ...BUSINESS].reduce((total, group) => total + group.items.length, 0),
-    label: "Capabilities",
-    suffix: "+",
-  },
-  { value: INDUSTRIES.length, label: "Industries served", suffix: "+" },
-] as const;
+const statsFor = (serviceCount: number) =>
+  [
+    { value: Math.floor(serviceCount / 5) * 5, label: "Service lines", suffix: "+" },
+    { value: TECHNOLOGY.length, label: "Technology domains", suffix: "+" },
+    {
+      value: [...TECHNOLOGY, ...BUSINESS].reduce((total, group) => total + group.items.length, 0),
+      label: "Capabilities",
+      suffix: "+",
+    },
+    { value: INDUSTRIES.length, label: "Industries served", suffix: "+" },
+  ] as const;
 const HERO_AUDIENCE = [
   // Highlighted: website and app development is the service most visitors ask for first.
   { to: "website-app-development", label: "Apps & Websites", Icon: Code2, featured: true },
@@ -99,24 +99,25 @@ function PulseOnce({ children }: { children: React.ReactNode }) {
 }
 
 function Hero() {
+  const { home } = useSite();
   return (
     <section className="home-hero" aria-labelledby="home-hero-title">
       <TechBackdrop />
       <div className="container-z">
         <div className="home-hero-grid">
           <div className="home-hero-copy">
-            <p className="eyebrow home-hero-kicker">Software · AI · Cloud · Digital engineering</p>
+            <p className="eyebrow home-hero-kicker">{home.kicker}</p>
             <AnimatedWordmark className="home-wordmark" />
             <h1 id="home-hero-title" className="home-hero-title">
               <span className="home-hero-line">
-                <WordReveal text="We engineer ideas" startDelay={0.1} />
+                <WordReveal text={home.titleLine1} startDelay={0.1} />
               </span>
               <span className="home-hero-line home-hero-line-accent">
-                <WordReveal text="into scalable software." startDelay={0.3} />
+                <WordReveal text={home.titleLine2} startDelay={0.3} />
               </span>
             </h1>
             <div className="hero-for">
-              <p className="hero-for-label">Software & digital growth for</p>
+              <p className="hero-for-label">{home.audienceLabel}</p>
               <ul className="hero-for-list">
                 {HERO_AUDIENCE.map(({ to, label, Icon, featured }, index) => (
                   <li key={to} style={{ "--i": index } as React.CSSProperties}>
@@ -132,13 +133,10 @@ function Hero() {
                 ))}
               </ul>
             </div>
-            <p className="home-hero-description">
-              Software, websites, apps and digital marketing — planned, built and run by one
-              accountable team.
-            </p>
+            <p className="home-hero-description">{home.description}</p>
             <div className="home-hero-actions">
               <GlassButton to="/contact" className="hero-cta">
-                Start a conversation
+                {home.primaryCta}
               </GlassButton>
               <a
                 href="#core-services"
@@ -183,6 +181,8 @@ function Hero() {
 }
 
 function Home() {
+  const { services: SERVICES } = useSite();
+  const STATS = statsFor(SERVICES.length);
   return (
     <main>
       <Hero />
