@@ -13,7 +13,7 @@
 
 ## About this project
 
-This is the official website of **ZAQSA**, an IT and digital-services company based in New Delhi, founded by Chinmay Anand.
+This is the official website of **ZAQSA**, an IT and digital-services company based in New Delhi, founded by Drona Singh Rajpoot (Founder) and Chinmay Anand (Co-Founder).
 
 In the first two seconds, the home page tells a visitor what we build and who we build it for: apps and websites, hospitals, schools, campaigns and businesses.
 
