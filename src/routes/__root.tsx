@@ -60,7 +60,7 @@ function ScrollProgress() {
 
 export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
   loader: () => getSiteContent(),
-  head: () => ({
+  head: ({ loaderData }) => ({
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
@@ -93,13 +93,25 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         children: JSON.stringify({
           "@context": "https://schema.org",
           "@type": "Organization",
+          "@id": "https://zaqsa.com/#organization",
           name: "ZAQSA",
+          url: "https://zaqsa.com",
+          logo: "https://zaqsa.com/icon-512.png",
+          description:
+            "ZAQSA is a New Delhi software and digital-solutions company: management software for schools, hospitals and small businesses, plus AI automation, web development and digital marketing.",
           email: "zyqotech@gmail.com",
           telephone: "+91 9570752983",
-          founder: [
-            { "@type": "Person", name: "Drona Singh Rajpoot" },
-            { "@type": "Person", name: "Chinmay Anand" },
-          ],
+          founder: (loaderData?.team ?? [
+            { name: "Drona Singh Rajpoot", role: "Founder", group: "founder" },
+            { name: "Chinmay Anand", role: "Co-Founder", group: "founder" },
+          ])
+            .filter((person) => person.group === "founder")
+            .map((person) => ({
+              "@type": "Person",
+              name: person.name,
+              jobTitle: person.role,
+              worksFor: { "@id": "https://zaqsa.com/#organization" },
+            })),
           address: {
             "@type": "PostalAddress",
             streetAddress: "Mahavir Enclave",

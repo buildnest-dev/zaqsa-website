@@ -15,7 +15,8 @@ const EXPERTISE = [
 const COMPANY_LINKS = NAV.filter(({ to }) => ["/lab", "/about", "/contact"].includes(to));
 
 export function Footer() {
-  const { company: COMPANY } = useSite();
+  const { company: COMPANY, team } = useSite();
+  const founders = team.filter((person) => person.group === "founder");
   return (
     <footer className="site-footer">
       <div className="container-z relative">
@@ -84,9 +85,11 @@ export function Footer() {
 
           <address className="footer-contact not-italic">
             <h3 className="footer-column-title">Talk to us</h3>
-            <p className="text-foreground">
-              {COMPANY.founder} <span className="text-muted-foreground">· {COMPANY.role}</span>
-            </p>
+            {(founders.length ? founders : [{ id: "c", name: COMPANY.founder, role: COMPANY.role }]).map((person) => (
+              <p key={person.id} className="text-foreground">
+                {person.name} <span className="text-muted-foreground">· {person.role}</span>
+              </p>
+            ))}
             <p className="mt-3">{COMPANY.address}</p>
             <p className="mt-3">
               <a href={`tel:${COMPANY.phone.replace(/\s/g, "")}`}>{COMPANY.phone}</a>
