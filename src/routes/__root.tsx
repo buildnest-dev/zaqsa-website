@@ -73,6 +73,13 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "author", content: "ZAQSA" },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
+      { property: "og:site_name", content: "ZAQSA" },
+      { property: "og:locale", content: "en_IN" },
+      { property: "og:image", content: "https://zaqsa.com/og-image.png" },
+      { property: "og:image:width", content: "1200" },
+      { property: "og:image:height", content: "630" },
+      { property: "og:image:alt", content: "ZAQSA: we engineer ideas into scalable software" },
+      { name: "twitter:image", content: "https://zaqsa.com/og-image.png" },
       { name: "theme-color", content: "#f6f8ff" },
     ],
     links: [
