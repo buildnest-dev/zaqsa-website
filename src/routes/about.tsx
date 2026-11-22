@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { GlassButton, Reveal } from "@/components/site/primitives";
 import { COMPANY } from "@/lib/content";
 import { useSite } from "@/components/site/SiteContent";
-import { initialsOf } from "@/lib/photos";
+import { getPhoto, initialsOf } from "@/lib/photos";
 import { Photo } from "@/components/site/Photo";
 import { AboutHero } from "@/components/site/heroes";
 import { seo } from "@/lib/seo";
@@ -61,9 +61,34 @@ function TeamGrid({ group }: { group: "founder" | "engineer" }) {
   );
 }
 
+/** Tells search engines who each person is and which photo is theirs (kept in step with the admin). */
+function TeamSchema() {
+  const { team } = useSite();
+  const absolute = (src?: string) => (!src ? undefined : src.startsWith("http") ? src : `https://zaqsa.com${src}`);
+  const data = {
+    "@context": "https://schema.org",
+    "@graph": team.map((person) => ({
+      "@type": "Person",
+      "@id": `https://zaqsa.com/about#${person.id}`,
+      name: person.name,
+      jobTitle: person.role,
+      image: absolute(person.photo || getPhoto(person.slot).src),
+      url: "https://zaqsa.com/about",
+      worksFor: { "@id": "https://zaqsa.com/#organization" },
+    })),
+  };
+  return (
+    <script
+      type="application/ld+json"
+      dangerouslySetInnerHTML={{ __html: JSON.stringify(data).replace(/</g, "\u003c") }}
+    />
+  );
+}
+
 function Page() {
   return (
     <main>
+      <TeamSchema />
       <AboutHero />
       <section className="py-20 sm:py-24" aria-labelledby="team-h">
         <div className="container-z">
