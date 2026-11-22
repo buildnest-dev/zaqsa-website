@@ -77,7 +77,7 @@ const ALT: Record<string, string> = {
   "cta-group": "A group of colleagues standing together by office windows",
   "contact-team": "Four smiling colleagues posing together",
   "team-founder": "Chinmay Anand, co-founder of ZAQSA",
-  "team-drona": "Drona Singh Rajpoot, founder of ZAQSA",
+  "team-drona": "Amit Kumar Singh (Drona), founder of ZAQSA",
   "team-nishi": "Nishi Kumari, software engineer at ZAQSA",
   "team-surajit": "Surajit Sadhukhan, software engineer at ZAQSA",
 };
@@ -151,7 +151,7 @@ export function getPhoto(slot: PhotoSlot): {
   return { src: undefined, alt, art: ART[slot], initials: undefined };
 }
 
-/** "Drona Singh Rajpoot" -> "DR"; used when a person has no photo. */
+/** "Amit Kumar Singh (Drona)" -> "AK"; used when a person has no photo. */
 export function initialsOf(name: string): string {
   const parts = name.trim().split(/\s+/).filter(Boolean);
   return (

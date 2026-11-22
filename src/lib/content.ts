@@ -1814,7 +1814,7 @@ export const TEAM: {
   slot: `team-${string}`;
   group: "founder" | "engineer";
 }[] = [
-  { name: "Drona Singh Rajpoot", role: "Founder", slot: "team-drona", group: "founder" },
+  { name: "Amit Kumar Singh (Drona)", role: "Founder", slot: "team-drona", group: "founder" },
   { name: COMPANY.founder, role: COMPANY.role, slot: "team-founder", group: "founder" },
   { name: "Nishi Kumari", role: "Software Engineer", slot: "team-nishi", group: "engineer" },
   {

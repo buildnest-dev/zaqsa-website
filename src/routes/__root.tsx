@@ -102,7 +102,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
           email: "zyqotech@gmail.com",
           telephone: "+91 9570752983",
           founder: (loaderData?.team ?? [
-            { name: "Drona Singh Rajpoot", role: "Founder", group: "founder" },
+            { name: "Amit Kumar Singh (Drona)", role: "Founder", group: "founder" },
             { name: "Chinmay Anand", role: "Co-Founder", group: "founder" },
           ])
             .filter((person) => person.group === "founder")
